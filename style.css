@@ -5,18 +5,17 @@ body {
     justify-content: center;
 }
 
-.description {
-    padding-top: 50px ;
+.description, #return {
+    padding-top: 60px;
     position: absolute;
     color: yellow;
-    font-size: 20px;
-    margin-left: auto; 
+    font-size: 17px;
+    margin-left: auto;
+    font-family: bit;
     margin-right: auto;
     left: 0; 
     right: 0;
 }
-
-
 
 .biglogo {
     width: 600px;
@@ -36,7 +35,7 @@ body {
 }
 
 #press-enter {
-    display: "none";
+    display: block;
     position: absolute;
     width: 20%;
     padding-top: 20px;
@@ -45,6 +44,8 @@ body {
     left: 0; 
     right: 0;
 }
+
+
 
 #overpress {
     position:relative;
@@ -75,11 +76,11 @@ body {
 }
 
 #game-over {
-    position: fixed;
+    position: absolute;
+    margin-top: 50px;
     text-align: center;
-    padding-top: 5%;
     width: 800px;
-    height: 50vh;
+    height: 60vh;
 }
 
 

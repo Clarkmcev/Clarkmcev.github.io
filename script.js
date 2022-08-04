@@ -10,6 +10,7 @@ const gravity = 1;
 let speedObj = 1.25;
 let onRand = true;
 let gameAsStarted = false;
+let points = 0;
 
 // Audio
 var jumpSound = new Audio("./SOUND/SFX_Jump_42.wav", 100);
@@ -250,10 +251,24 @@ class Game {
     this.player = {};
     this.platforms = [];
     this.score = 0;
+
+    this.pointsToBeReceived = true;
   }
   clear() {
     this.player = {};
     this.platform = [];
+  }
+
+  update() {
+    // currentGame.currentCoins.forEach((elem) => {
+    //   if (elem.currentSprite === collectedImg && this.pointsToBeReceived) {
+    //     this.score += 1;
+    //     this.pointsToBeReceived = false;
+    //   } else if (elem.currentSprite != collectedImg) {
+    //     this.pointsToBeReceived = true;
+    //   }
+    // });
+    console.log(this.score);
   }
 }
 
@@ -385,10 +400,10 @@ class Coin {
     ) {
       this.frames = 0;
     }
-
     if (
       this.frames >= this.CurrentMaxFrames &&
-      this.currentSprite === collectedImg
+      this.currentSprite === collectedImg &&
+      frames % 10 === 0
     ) {
       this.frames = 0;
     }
@@ -439,8 +454,26 @@ function startGame() {
 }
 
 function computeScore() {
-  const points = Math.floor(obstacleFrequency / 100);
-  currentGame.score = points;
+  let nFruitCollected = [];
+  currentGame.currentCoins.forEach((elem, index) => {
+    if (
+      !nFruitCollected.includes(index) &&
+      elem.currentSprite === collectedImg
+    ) {
+      nFruitCollected.push(index);
+    }
+  });
+
+  obstacleFrequency + -speedObj;
+  /*Math.floor(obstacleFrequency / 100);*/
+  currentGame.currentPlatforms.forEach((elem, index) => {
+    if (elem.position.x + elem.width <= 0) {
+      currentGame.currentPlatforms.splice(elem, 1);
+    }
+  });
+  // currentGame.score += points;
+  currentGame.score = nFruitCollected.length;
+  // console.log("points", points, "obstacle frequency", obstacleFrequency);
   ctx.font = "50px bit";
   ctx.fillStyle = "yellow";
   ctx.fillText(`Score ${currentGame.score}`, myCanvas.width - 200, 50);
@@ -489,6 +522,13 @@ addEventListener("keydown", (event) => {
           currentGame.currentPlayer.sprites.doubleJump.image;
       }
       break;
+    case "Escape":
+      if (!gameAsStarted) {
+        gameOverMenu.style.display = "none";
+        startMenu.style.display = "block";
+        Init();
+      }
+      break;
   }
 });
 
@@ -509,6 +549,7 @@ function checkGameOver() {
     musicBack.pause();
     musicBack.currentTime = 0;
     gameOverSound.play();
+
     return true;
   } else return false;
 }
@@ -698,6 +739,15 @@ function collisionsAndUpdate() {
     // Collisions Coins
     currentGame.currentCoins.forEach((coin) => {
       currentGame.currentPlatforms.forEach((platform) => {
+        // if (
+        //   coin.currentSprite === collectedImg &&
+        //   coin.frames >= coin.CurrentMaxFrames
+        // ) {
+        //   currentGame.currentCoins.splice(coin, 1);
+        //   console.log("he");
+        //   currentGame.score += 1;
+        // }
+
         if (
           coin.position.y + coin.height <= platform.position.y &&
           coin.position.y + coin.height + coin.velocity.y >=
@@ -720,7 +770,7 @@ function collisionsAndUpdate() {
           //   fruitCollected.currentTime = 0;
           // }
           fruitCollected.play();
-          currentGame.score += 1;
+          // currentGame.score += 1;
           coin.currentSprite = collectedImg;
         }
       });
@@ -731,13 +781,13 @@ function collisionsAndUpdate() {
 // ANIMATION - HERE
 function animate() {
   frames++;
-
   ctx.clearRect(0, 0, myCanvas.width, myCanvas.height);
 
   backgroundRender();
   collisionsAndUpdate();
 
   if (gameAsStarted) {
+    currentGame.update();
     speedObj += 0.004;
     obstacleFrequency++;
     updateSpeed();
