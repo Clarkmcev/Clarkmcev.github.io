@@ -7,7 +7,7 @@ myCanvas.height = 500;
 
 // Configs
 const gravity = 1;
-let speedObj = 1.25;
+let speedObj = 1.3;
 let onRand = true;
 let gameAsStarted = false;
 let points = 0;
@@ -15,24 +15,26 @@ let points = 0;
 // Audio
 var jumpSound = new Audio("./SOUND/SFX_Jump_42.wav", 100);
 var doubleJump = new Audio("./SOUND/SFX_Jump_24.wav");
-var playerFall = new Audio("./SOUND/sfx_player_fall.mp3");
-var footSteps = new Audio("./SOUND/sfx_player_footsteps.mp3");
+var playerFall = new Audio("./SOUND/sfx_sounds_falling1.wav");
+var footSteps = new Audio("./SOUND/sfx_movement_footsteps1b.wav");
 var fruitCollected = new Audio("./SOUND/collected.wav");
-var jumpLand = new Audio("./SOUND/jumpland.wav");
+var jumpLand = new Audio("./SOUND/sfx_movement_jump9_landing.wav");
 var musicBack = new Audio("./SOUND/Musics/Runman soundtrack MASTER.wav", 0.2);
 var enterSound = new Audio("./SOUND/entersound.wav");
 var gameOverSound = new Audio("./SOUND/game_over_bad_chest.wav");
 var musicFront = new Audio("./SOUND/Musics/spirited_away.mp3");
 var musicFront = new Audio("./SOUND/Musics/8-bit-lofi-hip-hop (1).mp3");
 
-musicBack.volume = 1;
+musicBack.volume = 0.6;
 jumpSound.volume = 0.6;
 enterSound.volume = 0.5;
 doubleJump.volume = 0.5;
 fruitCollected.volume = 0.4;
-gameOverSound.volume = 1;
-musicFront.volume = 0.7;
+gameOverSound.volume = 0.7;
+musicFront.volume = 0.8;
 jumpLand.volume = 1;
+playerFall.volume = 0.8;
+footSteps.volume = 0.1;
 
 const back1 = new Image(800, 700);
 const back2 = new Image(800, 700);
@@ -66,6 +68,7 @@ const bananaImg = new Image(800, 700);
 const collectedImg = new Image(800, 700);
 const nothingImg = new Image(800, 700);
 const appleImg = new Image(800, 700);
+musicBack;
 
 back1.src = "./IMG/parallax-mountain-foreground-trees.png";
 back2.src = "./IMG/parallax-mountain-trees.png";
@@ -222,15 +225,20 @@ class Player {
       this.draw();
     }
 
-    if (
-      frames % 30 === 0 &&
-      this.currentSprite === this.sprites.run.image &&
-      gameAsStarted
-    ) {
-      footSteps.play();
-    }
+    // if (
+    //   frames % 25 === 0 &&
+    //   this.currentSprite === this.sprites.run.image &&
+    //   gameAsStarted
+    // ) {
+    //   footSteps.play();
+    // }
 
     this.position.y += this.velocity.y;
+
+    if (this.position.x < 150) {
+      this.position.x += 0.5;
+    }
+
     if (
       this.position.y /*+ this.height + this.velocity.y*/ <= myCanvas.height
     ) {
@@ -257,18 +265,6 @@ class Game {
   clear() {
     this.player = {};
     this.platform = [];
-  }
-
-  update() {
-    // currentGame.currentCoins.forEach((elem) => {
-    //   if (elem.currentSprite === collectedImg && this.pointsToBeReceived) {
-    //     this.score += 1;
-    //     this.pointsToBeReceived = false;
-    //   } else if (elem.currentSprite != collectedImg) {
-    //     this.pointsToBeReceived = true;
-    //   }
-    // });
-    console.log(this.score);
   }
 }
 
@@ -465,15 +461,12 @@ function computeScore() {
   });
 
   obstacleFrequency + -speedObj;
-  /*Math.floor(obstacleFrequency / 100);*/
   currentGame.currentPlatforms.forEach((elem, index) => {
     if (elem.position.x + elem.width <= 0) {
       currentGame.currentPlatforms.splice(elem, 1);
     }
   });
-  // currentGame.score += points;
   currentGame.score = nFruitCollected.length;
-  // console.log("points", points, "obstacle frequency", obstacleFrequency);
   ctx.font = "50px bit";
   ctx.fillStyle = "yellow";
   ctx.fillText(`Score ${currentGame.score}`, myCanvas.width - 200, 50);
@@ -698,6 +691,8 @@ function backgroundRender() {
   widthFore -= scrollingSpeed4;
 }
 
+let isUp = false;
+
 function collisionsAndUpdate() {
   if (currentGame.currentPlayer && currentGame.currentPlatforms) {
     currentGame.currentPlatforms.forEach((platform) => {
@@ -707,6 +702,10 @@ function collisionsAndUpdate() {
       coin.update();
     });
     currentGame.currentPlayer.update();
+
+    if (gameAsStarted && currentGame.currentPlayer.velocity.y < 0) {
+      isUp = true;
+    }
 
     // Collision Platforms vs Player
     currentGame.currentPlatforms.forEach((elem) => {
@@ -726,6 +725,11 @@ function collisionsAndUpdate() {
         currentGame.currentPlayer.currentSprite =
           currentGame.currentPlayer.sprites.run.image;
         currentGame.currentPlayer.velocity.y = 0;
+
+        if (isUp) {
+          jumpLand.play();
+          isUp = false;
+        }
         currentGame.currentPlayer.currentSprite =
           currentGame.currentPlayer.sprites.run.image;
         currentGame.currentPlayer.currentCropWidth =
@@ -734,20 +738,26 @@ function collisionsAndUpdate() {
           currentGame.currentPlayer.sprites.run.maxFrames;
         nJump = 0;
       }
+
+      if (
+        currentGame.currentPlayer.position.x +
+          currentGame.currentPlayer.width >=
+          elem.position.x &&
+        currentGame.currentPlayer.position.y +
+          currentGame.currentPlayer.height >=
+          elem.position.y &&
+        currentGame.currentPlayer.position.x <= elem.position.x + elem.height &&
+        currentGame.currentPlayer.position.y +
+          currentGame.currentPlayer.height <=
+          elem.position.y + elem.height
+      ) {
+        currentGame.currentPlayer.position.x -= speedObj;
+      }
     });
 
-    // Collisions Coins
+    // Collisions Coins Player
     currentGame.currentCoins.forEach((coin) => {
       currentGame.currentPlatforms.forEach((platform) => {
-        // if (
-        //   coin.currentSprite === collectedImg &&
-        //   coin.frames >= coin.CurrentMaxFrames
-        // ) {
-        //   currentGame.currentCoins.splice(coin, 1);
-        //   console.log("he");
-        //   currentGame.score += 1;
-        // }
-
         if (
           coin.position.y + coin.height <= platform.position.y &&
           coin.position.y + coin.height + coin.velocity.y >=
@@ -765,12 +775,7 @@ function collisionsAndUpdate() {
             currentGame.currentPlayer.width >=
             coin.position.x
         ) {
-          // if (fruitCollected.currentTime > 0) {
-          //   fruitCollected.pause;
-          //   fruitCollected.currentTime = 0;
-          // }
           fruitCollected.play();
-          // currentGame.score += 1;
           coin.currentSprite = collectedImg;
         }
       });
@@ -787,7 +792,6 @@ function animate() {
   collisionsAndUpdate();
 
   if (gameAsStarted) {
-    currentGame.update();
     speedObj += 0.004;
     obstacleFrequency++;
     updateSpeed();

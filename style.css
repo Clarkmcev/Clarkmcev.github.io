@@ -5,7 +5,7 @@ body {
     justify-content: center;
 }
 
-.description, #return {
+.description {
     padding-top: 60px;
     position: absolute;
     color: yellow;
@@ -16,6 +16,19 @@ body {
     left: 0; 
     right: 0;
 }
+
+#return {
+    padding-top: 20px;
+    position: absolute;
+    color: yellow;
+    font-size: 20px;
+    margin-left: auto;
+    font-family: bit;
+    margin-right: auto;
+    left: 0; 
+    right: 0;
+}
+
 
 .biglogo {
     width: 600px;
@@ -77,7 +90,7 @@ body {
 
 #game-over {
     position: absolute;
-    margin-top: 50px;
+    margin-top: 100px;
     text-align: center;
     width: 800px;
     height: 60vh;
