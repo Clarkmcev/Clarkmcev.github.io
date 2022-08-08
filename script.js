@@ -7,15 +7,14 @@ myCanvas.height = 500;
 
 // Configs
 const gravity = 1;
-let speedObj = 1.3;
-let onRand = true;
+let speedObj = 0.7;
 let gameAsStarted = false;
 let points = 0;
 
 // Audio
 var jumpSound = new Audio("./SOUND/SFX_Jump_42.wav", 100);
 var doubleJump = new Audio("./SOUND/SFX_Jump_24.wav");
-var playerFall = new Audio("./SOUND/sfx_sounds_falling1.wav");
+var playerFall = new Audio("./SOUND/Teleport_3.wav");
 var footSteps = new Audio("./SOUND/sfx_movement_footsteps1b.wav");
 var fruitCollected = new Audio("./SOUND/collected.wav");
 var jumpLand = new Audio("./SOUND/sfx_movement_jump9_landing.wav");
@@ -31,9 +30,9 @@ enterSound.volume = 0.5;
 doubleJump.volume = 0.5;
 fruitCollected.volume = 0.4;
 gameOverSound.volume = 0.7;
-musicFront.volume = 0.8;
+musicFront.volume = 0.6;
 jumpLand.volume = 1;
-playerFall.volume = 0.8;
+playerFall.volume = 0.2;
 footSteps.volume = 0.1;
 
 const back1 = new Image(800, 700);
@@ -171,15 +170,9 @@ class Player {
       },
     };
 
-    // if (!gameAsStarted) {
-    this.currentSprite = this.sprites.idle.image;
-    this.currentCropWidth = this.sprites.idle.cropWidth;
-    this.CurrentMaxFrames = this.sprites.idle.maxFrames;
-    // } else {
-    //   this.currentSprite = this.sprites.run.image;
-    //   this.currentCropWidth = this.sprites.run.cropWidth;
-    //   this.CurrentMaxFrames = this.sprites.run.maxFrames;
-    // }
+    this.currentSprite = this.sprites.run.image;
+    this.currentCropWidth = this.sprites.run.cropWidth;
+    this.CurrentMaxFrames = this.sprites.run.maxFrames;
   }
   draw() {
     ctx.drawImage(
@@ -196,7 +189,8 @@ class Player {
   }
 
   update() {
-    if (frames % 4 === 0 && this.currentSprite === this.sprites.run.image) {
+    // Sprite Player
+    if (frames % 5 === 0 && this.currentSprite === this.sprites.run.image) {
       this.frames += 1;
       if (this.frames >= this.CurrentMaxFrames) {
         this.frames = 0;
@@ -221,17 +215,20 @@ class Player {
         this.currentSprite = this.sprites.jump.image;
       }
       this.draw();
+    } else if (
+      frames % 4 === 0 &&
+      this.currentSprite === this.sprites.fall.image
+    ) {
+      this.frames += 1;
+      if (this.frames >= this.CurrentMaxFrames) {
+        this.frames = 0;
+      }
+      this.draw();
     } else {
       this.draw();
     }
 
-    // if (
-    //   frames % 25 === 0 &&
-    //   this.currentSprite === this.sprites.run.image &&
-    //   gameAsStarted
-    // ) {
-    //   footSteps.play();
-    // }
+    // console.log(currentGame.currentPlayer.currentSprite);
 
     this.position.y += this.velocity.y;
 
@@ -288,7 +285,7 @@ class Platform {
     ctx.drawImage(
       this.image,
       this.position.x,
-      this.position.y,
+      this.position.y - 10,
       this.width,
       this.height
     );
@@ -316,59 +313,84 @@ class Coin {
         image: bananaImg,
         cropWidth: 32,
         maxFrames: 17,
-        points: 1,
+        points: 3,
+        color: "yellow",
       },
       cherry: {
         image: cherryImg,
         cropWidth: 32,
-        maxFrames: 4,
+        maxFrames: 17,
         points: 2,
+        color: "red",
       },
       strawberry: {
         image: strawberryImg,
         cropWidth: 32,
-        maxFrames: 4,
-        points: 3,
+        maxFrames: 17,
+        points: 2,
+        color: "red",
       },
       melon: {
         image: melonImg,
         cropWidth: 32,
-        maxFrames: 4,
+        maxFrames: 17,
         points: 3,
+        color: "red",
       },
       orange: {
         image: orangeImg,
         cropWidth: 32,
-        maxFrames: 4,
-        points: 4,
+        maxFrames: 17,
+        points: 3,
+        color: "orange",
       },
       pineapple: {
         image: pineappleImg,
         cropWidth: 32,
-        maxFrames: 4,
-        points: 2,
+        maxFrames: 17,
+        points: 3,
+        color: "orange",
       },
       apple: {
         image: appleImg,
         cropWidth: 32,
-        maxFrames: 4,
+        maxFrames: 17,
         points: 2,
+        color: "red",
       },
       collected: {
         image: collectedImg,
         cropWidth: 32,
         maxFrames: 7,
+        points: 0,
+        color: "white",
       },
       nothing: {
         image: nothingImg,
         cropWidth: 32,
         maxFrames: 4,
+        points: 0,
+        color: "white",
       },
     };
 
     this.currentSprite = this.sprites[this.image].image;
     this.currentCropWidth = this.sprites[this.image].cropWidth;
-    this.CurrentMaxFrames = this.sprites[this.image].maxFrames;
+    this.currentMaxFrames = this.sprites[this.image].maxFrames;
+    this.currentPoints = this.sprites[this.image].points;
+    this.currentColor = this.sprites[this.image].color;
+  }
+
+  fruitCollection(coin) {
+    if (this.frames) {
+      ctx.font = "25px bit";
+      ctx.fillStyle = coin.currentColor;
+      ctx.fillText(
+        `+${coin.currentPoints}`,
+        coin.position.x + coin.width + 50,
+        coin.position.y
+      );
+    }
   }
 
   draw() {
@@ -391,15 +413,15 @@ class Coin {
 
     this.frames += 1;
     if (
-      this.frames >= this.CurrentMaxFrames &&
+      this.frames >= this.currentMaxFrames &&
       this.currentSprite != collectedImg
     ) {
       this.frames = 0;
     }
     if (
-      this.frames >= this.CurrentMaxFrames &&
+      this.frames >= this.currentMaxFrames &&
       this.currentSprite === collectedImg &&
-      frames % 10 === 0
+      frames % 2 === 0
     ) {
       this.frames = 0;
     }
@@ -456,20 +478,20 @@ function computeScore() {
       !nFruitCollected.includes(index) &&
       elem.currentSprite === collectedImg
     ) {
-      nFruitCollected.push(index);
+      nFruitCollected.push(elem.currentPoints);
     }
   });
-
   obstacleFrequency + -speedObj;
   currentGame.currentPlatforms.forEach((elem, index) => {
     if (elem.position.x + elem.width <= 0) {
       currentGame.currentPlatforms.splice(elem, 1);
     }
   });
-  currentGame.score = nFruitCollected.length;
+
+  currentGame.score = nFruitCollected.reduce((a, b) => a + b, 0);
   ctx.font = "50px bit";
   ctx.fillStyle = "yellow";
-  ctx.fillText(`Score ${currentGame.score}`, myCanvas.width - 200, 50);
+  ctx.fillText(`Score ${currentGame.score}`, 20, 30);
 }
 
 function updateSpeed() {
@@ -486,13 +508,16 @@ let nJump = 0;
 // EventListener
 addEventListener("keydown", (event) => {
   switch (event.code) {
+    case "ArrowDown":
+      currentGame.currentPlayer.position.y += 10;
+      break;
     case "Enter":
       startMenu.style.display = "none";
       enterSound.play();
       if (!gameAsStarted) {
         startGame();
       }
-      if (gameAsStarted) {
+      if (gameAsStarted /*&& checkGameOver() === true*/) {
         gameOverMenu.style.display = "none";
         Init();
       }
@@ -502,13 +527,13 @@ addEventListener("keydown", (event) => {
       nJump += 1;
       if (nJump === 1) {
         jumpSound.play();
-        currentGame.currentPlayer.velocity.y -= 17;
+        currentGame.currentPlayer.velocity.y -= 18;
         currentGame.currentPlayer.CurrentMaxFrames =
           currentGame.currentPlayer.CurrentMaxFrames =
             currentGame.currentPlayer.sprites.jump.maxFrames;
       } else if (nJump === 2) {
         doubleJump.play(currentGame.currentPlayer.velocity.y);
-        currentGame.currentPlayer.velocity.y -= 17;
+        currentGame.currentPlayer.velocity.y -= 20;
         currentGame.currentPlayer.CurrentMaxFrames =
           currentGame.currentPlayer.sprites.doubleJump.maxFrames;
         currentGame.currentPlayer.currentSprite =
@@ -557,13 +582,21 @@ function randomObjects(n) {
     "orange",
     "apple",
   ];
+  let arrPlatY = [100, 200, 300, 400];
   // let image;
   setTimeout(() => {
-    if (n % 50 === 1) {
-      let randomY = Math.floor(Math.random() * 200 + 160);
+    if (n % 20 === 1) {
+      // let randomY = Math.floor(Math.random() * 200 + 160);
       let randomWidth = Math.floor(Math.random() * 100 + 150);
+      let randomArrPlatYIndex = Math.floor(Math.random() * arrPlatY.length);
       currentGame.currentPlatforms.push(
-        new Platform(myCanvas.width, randomY, randomWidth, 50, smallplatform)
+        new Platform(
+          myCanvas.width,
+          arrPlatY[randomArrPlatYIndex],
+          randomWidth,
+          30,
+          smallplatform
+        )
       );
       let imageIndexRandom = Math.floor(Math.random() * arrFruit.length);
 
@@ -572,7 +605,7 @@ function randomObjects(n) {
         currentGame.currentCoins.push(
           new Coin(
             myCanvas.width + randomWidth / 2,
-            randomY - 100,
+            arrPlatY[randomArrPlatYIndex] - 100,
             50,
             60,
             arrFruit[imageIndexRandom]
@@ -595,23 +628,10 @@ function Init() {
   currentGame.currentPlayer = new Player();
 
   // Platform plus froot init
-  currentGame.currentCoins = [new Coin(560, 350, 50, 60, "banana")];
-  // currentGame.currentCoins.push(new Coin(420, 350, 50, 60, "cherry"));
-  // currentGame.currentCoins.push(new Coin(480, 350, 50, 60, "strawberry"));
-  // currentGame.currentCoins.push(new Coin(440, 350, 50, 60, "pineapple"));
-  // currentGame.currentCoins.push(new Coin(400, 350, 50, 60, "melon"));
-  // currentGame.currentCoins.push(new Coin(360, 350, 50, 60, "orange"));
-  // currentGame.currentCoins.push(new Coin(320, 350, 50, 60, "apple"));
-
-  currentGame.currentPlatforms = [new Platform(0, 450, 800, 50, bigplatform)];
+  currentGame.currentCoins = [new Coin(560, 350, 50, 60, "cherry")];
+  currentGame.currentPlatforms = [new Platform(0, 470, 800, 50, bigplatform)];
   currentGame.currentPlatforms[0].update();
   currentGame.currentCoins[0].update();
-  // currentGame.currentCoins[1].update();
-  // currentGame.currentCoins[2].update();
-  // currentGame.currentCoins[3].update();
-  // currentGame.currentCoins[4].update();
-  // currentGame.currentCoins[5].update();
-  // currentGame.currentCoins[6].update();
   currentGame.currentPlayer.update();
 }
 
@@ -694,6 +714,7 @@ function backgroundRender() {
 let isUp = false;
 
 function collisionsAndUpdate() {
+  // Update Coin, platform and Player
   if (currentGame.currentPlayer && currentGame.currentPlatforms) {
     currentGame.currentPlatforms.forEach((platform) => {
       platform.update();
@@ -707,7 +728,7 @@ function collisionsAndUpdate() {
       isUp = true;
     }
 
-    // Collision Platforms vs Player
+    // Collision Platforms and player
     currentGame.currentPlatforms.forEach((elem) => {
       if (
         currentGame.currentPlayer.position.y +
@@ -722,14 +743,18 @@ function collisionsAndUpdate() {
           elem.position.x &&
         elem.position.x + elem.width >= currentGame.currentPlayer.position.x
       ) {
+        // Velocity to 0 when the player land on a platform
         currentGame.currentPlayer.currentSprite =
           currentGame.currentPlayer.sprites.run.image;
         currentGame.currentPlayer.velocity.y = 0;
 
+        // Landing sound
         if (isUp) {
           jumpLand.play();
           isUp = false;
         }
+
+        // Run Sprite when on a platform
         currentGame.currentPlayer.currentSprite =
           currentGame.currentPlayer.sprites.run.image;
         currentGame.currentPlayer.currentCropWidth =
@@ -739,6 +764,19 @@ function collisionsAndUpdate() {
         nJump = 0;
       }
 
+      if (
+        currentGame.currentPlayer.velocity.y > 0 &&
+        currentGame.currentPlayer.velocity.y <= 11 &&
+        currentGame.currentPlayer.currentSprite != maskFall
+      ) {
+        currentGame.currentPlayer.currentSprite =
+          currentGame.currentPlayer.sprites.fall.image;
+        currentGame.currentPlayer.currentCropWidth =
+          currentGame.currentPlayer.sprites.fall.cropWidth;
+        currentGame.currentPlayer.CurrentMaxFrames =
+          currentGame.currentPlayer.sprites.fall.maxFrames;
+      }
+      // Collision with the side of the platforms
       if (
         currentGame.currentPlayer.position.x +
           currentGame.currentPlayer.width >=
@@ -755,7 +793,7 @@ function collisionsAndUpdate() {
       }
     });
 
-    // Collisions Coins Player
+    // Collisions Coins and player
     currentGame.currentCoins.forEach((coin) => {
       currentGame.currentPlatforms.forEach((platform) => {
         if (
@@ -773,10 +811,17 @@ function collisionsAndUpdate() {
           coin.position.x + coin.width > currentGame.currentPlayer.position.x &&
           currentGame.currentPlayer.position.x +
             currentGame.currentPlayer.width >=
-            coin.position.x
+            coin.position.x &&
+          currentGame.currentPlayer.position.y <= coin.position.y + coin.height
         ) {
           fruitCollected.play();
           coin.currentSprite = collectedImg;
+          coin.fruitCollection(coin);
+        }
+        if (
+          coin.position.x - 200 <= currentGame.currentPlayer.position.x &&
+          coin.currentSprite === collectedImg
+        ) {
         }
       });
     });
