@@ -30,9 +30,9 @@ enterSound.volume = 0.5;
 doubleJump.volume = 0.5;
 fruitCollected.volume = 0.4;
 gameOverSound.volume = 0.7;
-musicFront.volume = 0.6;
+musicFront.volume = 0.1;
 jumpLand.volume = 1;
-playerFall.volume = 0.2;
+playerFall.volume = 0.1;
 footSteps.volume = 0.1;
 
 const back1 = new Image(800, 700);
@@ -156,7 +156,7 @@ class Player {
       doubleJump: {
         image: maskDoubleJump,
         cropWidth: 32,
-        maxFrames: 6,
+        maxFrames: 7,
       },
       fall: {
         image: maskFall,
@@ -166,7 +166,7 @@ class Player {
       idle: {
         image: maskIdle,
         cropWidth: 32,
-        maxFrames: 1,
+        maxFrames: 11,
       },
     };
 
@@ -197,7 +197,7 @@ class Player {
       }
       this.draw();
     } else if (
-      frames % 4 === 0 &&
+      frames % 1 === 0 &&
       this.currentSprite === this.sprites.jump.image
     ) {
       this.frames += 1;
@@ -216,8 +216,17 @@ class Player {
       }
       this.draw();
     } else if (
-      frames % 4 === 0 &&
+      frames % 1 === 0 &&
       this.currentSprite === this.sprites.fall.image
+    ) {
+      this.frames += 1;
+      if (this.frames >= this.CurrentMaxFrames) {
+        this.frames = 0;
+      }
+      this.draw();
+    } else if (
+      frames % 5 === 0 &&
+      this.currentSprite === this.sprites.idle.image
     ) {
       this.frames += 1;
       if (this.frames >= this.CurrentMaxFrames) {
@@ -227,8 +236,6 @@ class Player {
     } else {
       this.draw();
     }
-
-    // console.log(currentGame.currentPlayer.currentSprite);
 
     this.position.y += this.velocity.y;
 
@@ -242,6 +249,10 @@ class Player {
       this.velocity.y += gravity;
     } else {
       this.velocity.y = 0;
+    }
+
+    if (this.position.y <= 0) {
+      this.position.y = 0;
     }
   }
 
@@ -601,7 +612,7 @@ function randomObjects(n) {
       let imageIndexRandom = Math.floor(Math.random() * arrFruit.length);
 
       let randomSpawnFruit = Math.floor(Math.random() * 100);
-      if (randomSpawnFruit >= 65) {
+      if (randomSpawnFruit >= 80) {
         currentGame.currentCoins.push(
           new Coin(
             myCanvas.width + randomWidth / 2,
@@ -744,29 +755,42 @@ function collisionsAndUpdate() {
         elem.position.x + elem.width >= currentGame.currentPlayer.position.x
       ) {
         // Velocity to 0 when the player land on a platform
-        currentGame.currentPlayer.currentSprite =
-          currentGame.currentPlayer.sprites.run.image;
-        currentGame.currentPlayer.velocity.y = 0;
+
+        if (gameAsStarted) {
+          currentGame.currentPlayer.currentSprite =
+            currentGame.currentPlayer.sprites.run.image;
+          currentGame.currentPlayer.velocity.y = 0;
+          currentGame.currentPlayer.currentSprite =
+            currentGame.currentPlayer.sprites.run.image;
+          currentGame.currentPlayer.currentCropWidth =
+            currentGame.currentPlayer.sprites.run.cropWidth;
+          currentGame.currentPlayer.CurrentMaxFrames =
+            currentGame.currentPlayer.sprites.run.maxFrames;
+        } else {
+          currentGame.currentPlayer.currentSprite =
+            currentGame.currentPlayer.sprites.idle.image;
+          currentGame.currentPlayer.velocity.y = 0;
+          currentGame.currentPlayer.currentSprite =
+            currentGame.currentPlayer.sprites.idle.image;
+          currentGame.currentPlayer.currentCropWidth =
+            currentGame.currentPlayer.sprites.idle.cropWidth;
+          currentGame.currentPlayer.CurrentMaxFrames =
+            currentGame.currentPlayer.sprites.idle.maxFrames;
+        }
 
         // Landing sound
         if (isUp) {
           jumpLand.play();
           isUp = false;
         }
-
         // Run Sprite when on a platform
-        currentGame.currentPlayer.currentSprite =
-          currentGame.currentPlayer.sprites.run.image;
-        currentGame.currentPlayer.currentCropWidth =
-          currentGame.currentPlayer.sprites.run.cropWidth;
-        currentGame.currentPlayer.CurrentMaxFrames =
-          currentGame.currentPlayer.sprites.run.maxFrames;
         nJump = 0;
       }
 
+      // Sprite Fall
       if (
         currentGame.currentPlayer.velocity.y > 0 &&
-        currentGame.currentPlayer.velocity.y <= 11 &&
+        currentGame.currentPlayer.velocity.y < 12 &&
         currentGame.currentPlayer.currentSprite != maskFall
       ) {
         currentGame.currentPlayer.currentSprite =
@@ -844,6 +868,6 @@ function animate() {
     checkGameOver();
     computeScore();
   }
-
+  // console.log(currentGame.currentPlayer.currentSprite);
   requestAnimationFrame(animate);
 }
