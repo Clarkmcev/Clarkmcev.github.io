@@ -251,9 +251,9 @@ class Player {
       this.velocity.y = 0;
     }
 
-    if (this.position.y <= 0) {
-      this.position.y = 0;
-    }
+    // if (this.position.y <= 0) {
+    //   this.position.y = 0;
+    // }
   }
 
   jump() {
@@ -801,20 +801,20 @@ function collisionsAndUpdate() {
           currentGame.currentPlayer.sprites.fall.maxFrames;
       }
       // Collision with the side of the platforms
-      if (
-        currentGame.currentPlayer.position.x +
-          currentGame.currentPlayer.width >=
-          elem.position.x &&
-        currentGame.currentPlayer.position.y +
-          currentGame.currentPlayer.height >=
-          elem.position.y &&
-        currentGame.currentPlayer.position.x <= elem.position.x + elem.height &&
-        currentGame.currentPlayer.position.y +
-          currentGame.currentPlayer.height <=
-          elem.position.y + elem.height
-      ) {
-        currentGame.currentPlayer.position.x -= speedObj;
-      }
+      // if (
+      //   currentGame.currentPlayer.position.x +
+      //     currentGame.currentPlayer.width >=
+      //     elem.position.x &&
+      //   currentGame.currentPlayer.position.y +
+      //     currentGame.currentPlayer.height >=
+      //     elem.position.y &&
+      //   currentGame.currentPlayer.position.x <= elem.position.x + elem.height &&
+      //   currentGame.currentPlayer.position.y +
+      //     currentGame.currentPlayer.height <=
+      //     elem.position.y + elem.height
+      // ) {
+      //   currentGame.currentPlayer.position.x -= speedObj;
+      // }
     });
 
     // Collisions Coins and player
